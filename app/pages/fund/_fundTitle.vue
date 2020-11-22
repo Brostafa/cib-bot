@@ -27,13 +27,13 @@
         @click="pickPeriod('1Y')"
       >1Y</v-chip>
       <v-chip
-        :class="period === '3Y' ? 'primary' : ''"
-        @click="pickPeriod('3Y')"
-      >3Y</v-chip>
-      <v-chip
         :class="period === '2Y' ? 'primary' : ''"
         @click="pickPeriod('2Y')"
       >2Y</v-chip>
+      <v-chip
+        :class="period === '3Y' ? 'primary' : ''"
+        @click="pickPeriod('3Y')"
+      >3Y</v-chip>
       <v-chip
         :class="period === '5Y' ? 'primary' : ''"
         @click="pickPeriod('5Y')"
