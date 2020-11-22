@@ -19,6 +19,10 @@ module.exports = {
         NODE_ENV: 'production',
         NUXT_PORT: 3000
       },
+    },
+    {
+      name: `cib-autodeploy`,
+      script: 'autodeploy.js',
     }
   ]
 }
