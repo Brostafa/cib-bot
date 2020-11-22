@@ -31,7 +31,7 @@
         @click="pickPeriod('All')"
       >All</v-chip>
     </div>
-		<Chart :data="barChartData" :options="barChartOptions" :height="150" />
+		<Chart :data="barChartData" :options="barChartOptions" :height="height" />
 
       <v-container>
         <v-row class="text-center">
@@ -83,7 +83,19 @@ export default {
       low: 0,
       current: 0,
       priceDiff: 0,
-      percDiff: 0
+      percDiff: 0,
+    }
+  },
+  computed: {
+    height () {
+      if (process.client) {
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        const vh = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+        
+        return vw > 996
+          ? 150
+          : vh
+      }
     }
   },
   created () {
@@ -147,7 +159,6 @@ export default {
         data: prices,
         backgroundColor: isPositive ? '#4caf50' : '#f44336'
       }
-
     }
 	},
 }

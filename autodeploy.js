@@ -26,7 +26,8 @@ const promiseDelay = (interval) => new Promise((r) => setTimeout(r, interval))
 const pullChanges = () => execAsync('git pull -X theirs', false)
 const runYarnBackend = () => execAsync('cd api && yarn install')
 const runYarnFrontend = () => execAsync('cd app && yarn install && yarn build')
-const reloadApp = () => execAsync('pm2 reload cib-frontend cib-backend --update-env')
+const reloadFrontend = () => execAsync('pm2 reload cib-frontend --update-env')
+const reloadBackend = () => execAsync('pm2 reload cib-backend --update-env')
 const reloadAutodeploy = () => execAsync('pm2 reload cib-autodeploy')
 
 const start = async () => {
@@ -38,7 +39,8 @@ const start = async () => {
       console.log('Found new code!')
       console.log(await runYarnBackend())
       console.log(await runYarnFrontend())
-      console.log(await reloadApp())
+      console.log(await reloadFrontend())
+      console.log(await reloadBackend())
       console.log(await reloadAutodeploy())
     }
   } catch (e) {
