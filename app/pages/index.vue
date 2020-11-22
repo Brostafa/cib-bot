@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-center">CIB Fundss</h1>
+    <h1 class="text-center">CIB Funds</h1>
     
     <v-simple-table>
       <template v-slot:default>

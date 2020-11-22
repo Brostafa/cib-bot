@@ -12,6 +12,7 @@ const exec = require('child_process').exec
 const CHECK_EVERY = 30 * 1000 // 30 seconds
 
 const execAsync = (command, logCommand = true) => new Promise((resolve, reject) => {
+  if (logCommand) console.log('Executing:', command)
   exec(command, (error, stdout, stderr) => {
     if (logCommand) console.log(stdout, stderr, error)
 
