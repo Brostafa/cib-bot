@@ -29,7 +29,7 @@
         </tbody>
       </template>
     </v-simple-table>
-    <v-btn class="mt-5 mb-2" color="info" @click="downloadData">Download Xsls</v-btn>
+    <v-btn class="mt-6 mb-2" color="info" @click="downloadData">Download Xsls</v-btn>
   </div>
 </template>
 
