@@ -27,6 +27,18 @@
         @click="pickPeriod('1Y')"
       >1Y</v-chip>
       <v-chip
+        :class="period === '3Y' ? 'primary' : ''"
+        @click="pickPeriod('3Y')"
+      >3Y</v-chip>
+      <v-chip
+        :class="period === '2Y' ? 'primary' : ''"
+        @click="pickPeriod('2Y')"
+      >2Y</v-chip>
+      <v-chip
+        :class="period === '5Y' ? 'primary' : ''"
+        @click="pickPeriod('5Y')"
+      >5Y</v-chip>
+      <v-chip
         :class="period === 'All' ? 'primary' : ''"
         @click="pickPeriod('All')"
       >All</v-chip>
@@ -132,6 +144,15 @@ export default {
           break
         case '1Y':
           periodInMs = 364 * 24 * 60 * 60 * 1000
+          break
+        case '2Y':
+          periodInMs = 2 * 364 * 24 * 60 * 60 * 1000
+          break
+        case '3Y':
+          periodInMs = 3 * 364 * 24 * 60 * 60 * 1000
+          break
+        case '5Y':
+          periodInMs = 5 * 364 * 24 * 60 * 60 * 1000
           break
         case 'All':
           periodInMs = Date.now()
