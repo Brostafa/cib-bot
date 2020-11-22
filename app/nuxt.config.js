@@ -6,8 +6,8 @@ const baseURL = process.env.NODE_ENV === 'production'
 export default {
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - cib',
-    title: 'cib',
+    titleTemplate: 'CIB - %s',
+    title: 'CIB',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },

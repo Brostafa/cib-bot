@@ -75,6 +75,9 @@ export default {
     downloadData () {
       window.open(`${this.$axios.defaults.baseURL}/cib_funds.xsls`)
     }
+  },
+  meta: {
+    title: 'Home'
   }
 }
 </script>

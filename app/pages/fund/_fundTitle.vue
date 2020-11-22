@@ -181,7 +181,12 @@ export default {
         backgroundColor: isPositive ? '#4caf50' : '#f44336'
       }
     }
-	},
+  },
+  head () {
+    return {
+      title: this.$route.params.fundTitle
+    }
+  }
 }
 </script>
 
