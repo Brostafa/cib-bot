@@ -1,7 +1,10 @@
 <template>
 	<div>
 		<h1 class="text-center">Fund - {{fundTitle}}</h1>
-		<v-icon class="back-icon" @click="goBack">mdi-arrow-left</v-icon>
+    <div class="back-icon">
+      <v-icon @click="goBack">mdi-arrow-left</v-icon>
+    </div>
+
     <div class="text-center">
       <v-chip
         :class="period === '5D' ? 'primary' : ''"
