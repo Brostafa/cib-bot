@@ -1,6 +1,6 @@
 import colors from 'vuetify/es5/util/colors'
 const baseURL = process.env.NODE_ENV === 'production'
-  ? 'https://api.socialtoma.com/'
+  ? 'https://api-cib.brostafa.com/'
   : 'http://localhost:8080'
 
 export default {

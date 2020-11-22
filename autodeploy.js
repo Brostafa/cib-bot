@@ -35,7 +35,6 @@ const start = async () => {
     
     if (hasNewCode) {
       console.log('Found new code!')
-      console.log(await runYarn())
       console.log(await runYarnBackend())
       console.log(await runYarnFrontend())
       console.log(await reloadApp())

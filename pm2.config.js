@@ -12,7 +12,7 @@ module.exports = {
     },
     {
       name: `cib-frontend`,
-      script: 'yarn',
+      script: 'npm',
       args: ['start', '--colors'],
       cwd: 'app',
       env: {
