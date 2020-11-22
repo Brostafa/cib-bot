@@ -24,7 +24,19 @@
           >
             <td><NuxtLink :to="'/fund/' + item.name">{{ item.name }}</NuxtLink></td>
             <td>{{ item.date }}</td>
-            <td>{{ item.price }}</td>
+            <td>
+              <span style="font-size: 18px;">{{ item.price }}</span>
+              <span
+                v-if="!isNaN(item.priceDiff)"
+                style="font-size: 14px;"
+                :class="item.priceDiff < 0 ? 'red--text' : 'green--text'"
+              >
+                <v-icon size="16" class="mb-1" color="error" v-if="item.priceDiff < 0">mdi-arrow-down-thick</v-icon>
+                <v-icon size="16" class="mb-1" color="success" v-else>mdi-arrow-up-thick</v-icon>
+                {{item.priceDiff}}
+                ({{item.percDiff}}%)
+              </span>
+            </td>
           </tr>
         </tbody>
       </template>
@@ -40,12 +52,18 @@ export default {
 
     for (let fundTitle in store.state.funds) {
       const fund = store.state.funds[fundTitle]
-      const { date, price } = fund.slice(-1)[0]
+      const fundClone = [...fund]
+      const { date, price } = fundClone.splice(-1)[0]
+      const { price: prevPrice } = fundClone.splice(-1)[0] || {} 
+      const priceDiff = Math.round((price - prevPrice) * 100) / 100
+      const percDiff = Math.round((price / prevPrice - 1) * 100 * 100) / 100
       
       funds.push({
         name: fundTitle,
         date,
-        price
+        price,
+        priceDiff,
+        percDiff
       })
     }
 
