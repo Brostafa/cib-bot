@@ -5,7 +5,7 @@
       <v-icon @click="goBack">mdi-arrow-left</v-icon>
     </div>
 
-    <div class="text-center">
+    <div class="text-center mt-3">
       <v-chip
         :class="period === '5D' ? 'primary' : ''"
         @click="pickPeriod('5D')"
@@ -43,11 +43,95 @@
         @click="pickPeriod('All')"
       >All</v-chip>
     </div>
+    <v-row style="max-width: 300px; margin: 10px auto" align="center" justify="center">
+      <v-col>
+        <v-dialog
+          ref="startDateDialog"
+          v-model="startDateDialog"
+          :return-value.sync="startDate"
+          persistent
+          width="290px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="startDate"
+              label="Start date"
+              prepend-icon="mdi-calendar"
+              readonly
+              v-bind="attrs"
+              v-on="on"
+               style="width: 125px"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            v-model="startDate"
+            scrollable
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="startDateDialog = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.startDateDialog.save(startDate); pickPeriod('Custom')"
+            >
+              OK
+            </v-btn>
+          </v-date-picker>
+        </v-dialog>
+      </v-col>
+      <v-col>
+        <v-dialog
+          ref="endDateDialog"
+          v-model="endDateDialog"
+          :return-value.sync="endDate"
+          persistent
+          width="290px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="endDate"
+              label="End date"
+              prepend-icon="mdi-calendar"
+              readonly
+              v-bind="attrs"
+              v-on="on"
+               style="width: 125px"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            v-model="endDate"
+            scrollable
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="endDateDialog = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.endDateDialog.save(endDate); pickPeriod('Custom')"
+            >
+              OK
+            </v-btn>
+          </v-date-picker>
+        </v-dialog>
+      </v-col>
+    </v-row>
 		<Chart :data="barChartData" :options="barChartOptions" :height="height" />
 
       <v-container>
         <v-row class="text-center">
-          <v-col md="4">
+          <v-col>
             Current: {{current}}
             <span
               v-if="!isNaN(priceDiff)"
@@ -60,8 +144,8 @@
               ({{percDiff}}%)
             </span>
           </v-col>
-          <v-col md="4">High: {{high}}</v-col>
-          <v-col md="4">Low: {{low}}</v-col>
+          <v-col>High: {{high}}</v-col>
+          <v-col>Low: {{low}}</v-col>
         </v-row>
       </v-container>
     <section class="mt-2" style="font-size: 17px; font-weight: 500px">
@@ -75,6 +159,10 @@ export default {
 	data() {
     return {
       period: '3M',
+      startDateDialog: false,
+      startDate: '',
+      endDateDialog: false,
+      endDate: '',
       funds: [],
       fundTitle: '',
       barChartData: {
@@ -115,6 +203,7 @@ export default {
     this.fundTitle = fundTitle
     this.funds = this.$store.state.funds[fundTitle]
 
+    this.setDates()
     this.updatePeriod()
   },
 	methods: {
@@ -123,44 +212,34 @@ export default {
     },
     pickPeriod (period) {
       this.period = period
+      
+      if (period !== 'Custom') this.setDates()
+      
       this.updatePeriod()
+    },
+    setDates () {
+      const date = new Date()
+      const number = this.period.replace(/[A-z]+/, '')
+      const startDate = this.period.endsWith('D')
+        ? this.$dateFns.subDays(date, number)
+        : this.period.endsWith('M')
+          ? this.$dateFns.subMonths(date, number)
+          : this.period.endsWith('Y')
+            ? this.$dateFns.subYears(date, number)
+            : ''
+      this.startDate = startDate ? this.$dateFns.format(startDate) : ''
+      this.endDate = this.$dateFns.format(date)
     },
     updatePeriod () {
       const { period } = this
       let periodInMs = 0
-
-      switch (period) {
-        case '5D':
-          periodInMs = 5 * 24 * 60 * 60 * 1000
-          break
-        case '1M':
-          periodInMs = 30 * 24 * 60 * 60 * 1000
-          break
-        case '3M':
-          periodInMs = 90 * 24 * 60 * 60 * 1000
-          break
-        case '6M':
-          periodInMs = 180 * 24 * 60 * 60 * 1000
-          break
-        case '1Y':
-          periodInMs = 364 * 24 * 60 * 60 * 1000
-          break
-        case '2Y':
-          periodInMs = 2 * 364 * 24 * 60 * 60 * 1000
-          break
-        case '3Y':
-          periodInMs = 3 * 364 * 24 * 60 * 60 * 1000
-          break
-        case '5Y':
-          periodInMs = 5 * 364 * 24 * 60 * 60 * 1000
-          break
-        case 'All':
-          periodInMs = Date.now()
-          break
-      }
-
-      const timeDiff = Date.now() - periodInMs
-      const filteredFunds = this.funds.filter(fund => fund.timestamp > timeDiff)
+      const [ sYear, sMonth, sDay ] = this.startDate.split('-')
+      const startTimestamp = this.startDate
+        ? this.$dateFns.getTime(new Date(sYear, sMonth - 1, sDay)) - 1000
+        : 0
+      const [ eYear, eMonth, eDay ] = this.endDate.split('-')
+      const endTimestamp = this.$dateFns.getTime(new Date(eYear, eMonth - 1, eDay)) + 1000
+      const filteredFunds = this.funds.filter(fund => fund.timestamp > startTimestamp && fund.timestamp <= endTimestamp)
       const prices = filteredFunds.map(fund => fund.price)
       const currentPrice = prices.slice(-1)[0]
       const isPositive = prices[0] <= currentPrice
