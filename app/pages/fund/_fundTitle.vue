@@ -194,7 +194,7 @@ export default {
         
         return vw > 996
           ? 150
-          : vh
+          : vh - 100
       }
     }
   },
