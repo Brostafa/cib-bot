@@ -237,7 +237,7 @@ export default {
       let periodInMs = 0
       const [ sYear, sMonth, sDay ] = this.startDate.split('-')
       const startTimestamp = this.startDate
-        ? this.$dateFns.getTime(new Date(sYear, sMonth - 1, sDay)) - 1000
+        ? this.$dateFns.getTime(new Date(sYear, sMonth - 1, sDay)) -  (23 * 60 * 60 * 1000)
         : 0
       const [ eYear, eMonth, eDay ] = this.endDate.split('-')
       const endTimestamp = this.$dateFns.getTime(new Date(eYear, eMonth - 1, eDay)) + 1000
