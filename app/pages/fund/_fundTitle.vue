@@ -235,12 +235,13 @@ export default {
     updatePeriod () {
       const { period } = this
       let periodInMs = 0
+      const day = 23 * 60 * 60 * 1000
       const [ sYear, sMonth, sDay ] = this.startDate.split('-')
       const startTimestamp = this.startDate
-        ? this.$dateFns.getTime(new Date(sYear, sMonth - 1, sDay)) -  (23 * 60 * 60 * 1000)
+        ? this.$dateFns.getTime(new Date(sYear, sMonth - 1, sDay)) - day
         : 0
       const [ eYear, eMonth, eDay ] = this.endDate.split('-')
-      const endTimestamp = this.$dateFns.getTime(new Date(eYear, eMonth - 1, eDay)) + 1000
+      const endTimestamp = this.$dateFns.getTime(new Date(eYear, eMonth - 1, eDay)) + day
       const filteredFunds = this.funds.filter(fund => fund.timestamp > startTimestamp && fund.timestamp <= endTimestamp)
       const prices = filteredFunds.map(fund => fund.price)
       const currentPrice = prices.slice(-1)[0]
