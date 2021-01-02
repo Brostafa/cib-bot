@@ -7,6 +7,7 @@ const bodyParser = require('body-parser')
 const { getFunds, getExcel } = require('./libs/api')
 const { startScraper } = require('./libs/scraper')
 const logger = require('./libs/logger')
+const { scheduleJob } = require('node-schedule')
 
 const PORT = process.env.PORT || 8080
 const morganFormat = `:remote-addr - :remote-user :method :url :status :res[content-length] :referrer :user-agent`
@@ -40,5 +41,6 @@ app.get('/excel', getExcel)
 app.use(express.static('public'))
 
 app.listen(PORT, () => logger.success(`[Server] started on port ${PORT}`))
-startScraper()
 
+scheduleJob('* 0 * * * *', startScraper)
+startScraper()

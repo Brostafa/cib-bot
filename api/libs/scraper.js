@@ -42,8 +42,6 @@ const scrape = async () => {
 }
 
 const startScraper = async () => {
-	const hourTimestamp = 60 * 60 * 1000
-
 	try {
 		const json = await scrape()
 		let dataChanged = false
@@ -76,8 +74,6 @@ const startScraper = async () => {
 	} catch (e) {
 		logger.error(`[Scraper]`, e)
 	}
-
-	setTimeout(startScraper, hourTimestamp)
 }
 
 module.exports = {
