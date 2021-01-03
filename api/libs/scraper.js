@@ -2,7 +2,11 @@ const request = require('request-promise')
 const path = require('path')
 const { lowdb } = require('./lowdb-connection')
 const logger = require('./logger')
+const { uniqBy } = require('lodash')
 const ExcelJS = require('exceljs')
+const getProxies = require('get-free-https-proxy') 
+
+const MAX_HTTP_RETRIES = 3
 
 const BLOOMBERG_CODES = {
 	OSOUL: 'CIBMMOS:EY',
@@ -86,24 +90,66 @@ const startScraper = async () => {
 	}
 }
 
-const fetchBloomberg = async fundCode => {
-	const url = `https://www.bloomberg.com/markets2/api/history/${fundCode}/PX_LAST?timeframe=5_YEAR&period=daily&volumePeriod=daily`
-
-	const [ data ] = JSON.parse(await request(url, {
-		headers: {
-			'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36',
-			gzip: true,
-			'sec-fetch-dest': 'empty'
+const makeRequest = async (url, proxies, _retry = 1) => {
+	try {
+		let proxy = null
+		
+		// if it wasn't last try then use proxy
+		if (_retry !== MAX_HTTP_RETRIES) {
+			const randomIndex = Math.floor(Math.random() * proxies.length)
+			proxy = proxies[randomIndex]
 		}
-	}))
+		console.log(_retry, proxy)
 
-	return data.price
+		const response = JSON.parse(await request(url, {
+			headers: {
+				'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36',
+				gzip: true,
+				proxy,
+				timeout: 7500
+			}
+		}))
+
+		return response
+	} catch (e) {
+		if (_retry <= MAX_HTTP_RETRIES) {
+			return makeRequest(url, proxies, _retry + 1)
+		}
+
+		throw e
+	}
+}
+
+const fetchBloomberg = async (fundCode, proxies) => {
+	const urls = [
+		`https://www.bloomberg.com/markets2/api/history/${fundCode}/PX_LAST?timeframe=5_YEAR&period=daily&volumePeriod=daily`,
+		`https://www.bloomberg.com/markets/api/bulk-time-series/price/${fundCode}?timeFrame=5_YEAR`,
+	]
+
+	const promises = urls.map(async url => {
+		try {
+			const [ response ] = await makeRequest(url, proxies)
+			return response.price.map(a => ({
+				dateTime: a.dateTime || a.date,
+				value: a.value
+			}))
+		} catch (e) {
+			logger.error(`[Fetch Bloomberg] url="${url}"`, e)
+		}
+	})
+
+	const allPrices = (await Promise.all(promises)).flat()
+	const uniquePrices = uniqBy(allPrices, 'dateTime')
+
+	return uniquePrices
 }
 
 const scrapeBloomberg = async () => {
+	const proxies = (await getProxies()).map(proxy => `http://${proxy.host}:${proxy.port}`)
+
 	for (let fundName in BLOOMBERG_CODES) {
 		const fundCode = BLOOMBERG_CODES[fundName]
-		const prices = (await fetchBloomberg(fundCode)).map(priceData => {
+		const prices = (await fetchBloomberg(fundCode, proxies)).map(priceData => {
 			const [year, month, day] = priceData.dateTime.split('-')
 			
 			return {
