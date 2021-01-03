@@ -4,6 +4,16 @@ const { lowdb } = require('./lowdb-connection')
 const logger = require('./logger')
 const ExcelJS = require('exceljs')
 
+const BLOOMBERG_CODES = {
+	OSOUL: 'CIBMMOS:EY',
+	Istethmar: 'CIBSMAR:EY',
+	Aman: 'CIBAMAN:EY',
+	Hemaya: 'HAMAYAA:EY',
+	Thabat: 'THABATT:EY',
+	'Misr ElMostakbal': 'MISRALM:EY',
+	Takamol: 'TAKAMOL:EY'
+}
+
 const saveExcel = async () => {
 	const workbook = new ExcelJS.Workbook();
 	const filename = 'cib_funds.xsls'
@@ -76,6 +86,55 @@ const startScraper = async () => {
 	}
 }
 
+const fetchBloomberg = async fundCode => {
+	const url = `https://www.bloomberg.com/markets2/api/history/${fundCode}/PX_LAST?timeframe=5_YEAR&period=daily&volumePeriod=daily`
+
+	const [ data ] = JSON.parse(await request(url, {
+		headers: {
+			'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36',
+			gzip: true,
+			'sec-fetch-dest': 'empty'
+		}
+	}))
+
+	return data.price
+}
+
+const scrapeBloomberg = async () => {
+	for (let fundName in BLOOMBERG_CODES) {
+		const fundCode = BLOOMBERG_CODES[fundName]
+		const prices = (await fetchBloomberg(fundCode)).map(priceData => {
+			const [year, month, day] = priceData.dateTime.split('-')
+			
+			return {
+				date: `${day}/${month}/${year}`,
+				timestamp: new Date(year, month - 1, day).getTime(),
+				price: priceData.value,
+				scrapedAt: Date.now()
+			}
+		})
+		
+		const existingPrices = lowdb.get(fundName).value()
+		const existingDates = existingPrices.map(r => r.date)
+		const existingTimestamps = existingPrices.map(r => r.timestamp)
+		const uniquePrices = prices.filter(priceData =>
+			!existingTimestamps.includes(priceData.timestamp) &&
+			!existingDates.includes(priceData.date)
+		)
+
+		logger.info(`[Scrape Bloomberg] fundName="${fundName}" fundCode="${fundCode}" bloombergPriceCount="${prices.length}" existingPriceCount="${existingPrices.length}" uniquePricesCount="${uniquePrices.length}"`)
+		const allPrices = uniquePrices.concat(existingPrices).sort((a, b) => a.timestamp - b.timestamp)
+
+		
+		if (uniquePrices.length) {
+			lowdb.set(fundName, allPrices).write()
+
+			logger.success(`[Scrape Bloomberg] fundName="${fundName}" added ${uniquePrices.length} new dates. allDateCount="${allPrices.length}"`)
+		}
+	}
+}
+
 module.exports = {
-	startScraper
+	startScraper,
+	scrapeBloomberg
 }

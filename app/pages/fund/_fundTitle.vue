@@ -148,9 +148,7 @@
           <v-col>Low: {{low}}</v-col>
         </v-row>
       </v-container>
-    <section class="mt-2" style="font-size: 17px; font-weight: 500px">
-    </section>
-	</div>
+    </div>
 </template>
 
 <script>

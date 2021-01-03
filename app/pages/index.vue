@@ -13,6 +13,9 @@
               Date
             </th>
             <th class="text-left">
+              Total Dates
+            </th>
+            <th class="text-left">
               Net Asset (EGP)
             </th>
           </tr>
@@ -24,6 +27,7 @@
           >
             <td><NuxtLink :to="'/fund/' + item.name">{{ item.name }}</NuxtLink></td>
             <td>{{ item.date }}</td>
+            <td>{{ item.count }}</td>
             <td>
               <span style="font-size: 18px;">{{ item.price }}</span>
               <span
@@ -37,43 +41,88 @@
                 ({{item.percDiff}}%)
               </span>
             </td>
+
           </tr>
         </tbody>
       </template>
     </v-simple-table>
-    <v-btn class="mt-6 mb-2" color="info" @click="downloadData">Download Xsls</v-btn>
+    <section class="mt-6">
+      <v-btn class="mr-2" color="info" @click="downloadData">Download Xsls</v-btn>
+      <v-btn
+        color="info"
+        @click="updateBloomberg"
+        :loading="upadtingBloomberg"
+        :disabled="upadtingBloomberg"
+      >Update From Bloomberg</v-btn>
+    </section>
+
+    <v-snackbar
+      v-model="snackbar.isOpen"
+      :color="snackbar.color"
+      timeout="-1"
+    >
+      {{ snackbar.text }}
+
+       <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackbar.isOpen = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
 <script>
 export default {
-  async asyncData ({ $axios, store }) {
-    let funds = []
-
-    for (let fundTitle in store.state.funds) {
-      const fund = store.state.funds[fundTitle]
-      const fundClone = [...fund]
-      const { date, price } = fundClone.splice(-1)[0]
-      const { price: prevPrice } = fundClone.splice(-1)[0] || {} 
-      const priceDiff = Math.round((price - prevPrice) * 100) / 100
-      const percDiff = Math.round((price / prevPrice - 1) * 100 * 100) / 100
-      
-      funds.push({
-        name: fundTitle,
-        date,
-        price,
-        priceDiff,
-        percDiff
-      })
-    }
-
+  data () {
     return {
-      funds
+      upadtingBloomberg: false,
+      snackbar: {
+        isOpen: false,
+        color: '',
+        text: ''
+      }
+    }
+  },
+  computed: {
+    funds () {
+      return this.$store.state.fundsTable 
     }
   },
   methods: {
     downloadData () {
       window.open(`${this.$axios.defaults.baseURL}/cib_funds.xsls`)
+    },
+    async updateBloomberg () {
+      this.upadtingBloomberg = true
+      
+      try {
+        await this.$axios.post('/update', {
+          source: 'bloomberg'
+        })
+
+        await this.$store.dispatch('getFunds')
+        
+        this.snackbar = {
+          isOpen: true,
+          color: 'success',
+          text: 'Successfully updated funds from Bloomberg'
+        }
+      } catch (e) {
+        console.error('[Update Bloomberg]', e)
+        this.snackbar = {
+          isOpen: true,
+          color: 'red',
+          text: 'Failed to update funds from Bloomberg - ' + e.message + ' - ' + e.response?.data?.error
+        }
+      }
+
+      this.upadtingBloomberg = false
     }
   },
   head: {
