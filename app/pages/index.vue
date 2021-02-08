@@ -52,10 +52,11 @@
       </NuxtLink>
       <v-btn class="mr-2 mb-2" color="info" @click="downloadData">Download Xsls</v-btn>
       <v-btn
+        class="mb-2"
         color="info"
         @click="updateBloomberg"
         :loading="upadtingBloomberg"
-        :disabled="upadtingBloomberg"
+        :disabled="true || upadtingBloomberg"
       >Update From Bloomberg</v-btn>
     </section>
 
