@@ -82,7 +82,7 @@
 				<v-row class="font-weight-bold">
 					<v-col>Start Principle: {{ principle }}</v-col>
 					<v-col>End Principle: {{ calc.endPrinciple }}</v-col>
-					<v-col>Total Profits: {{ calc.profit }} ({{ calc.profitPerc }}%)</v-col>
+					<v-col>Total Profits: {{ calc.profit }} ({{ calc.profitPerc }}%) (Annualized: {{calc.annualized}}%)</v-col>
 				</v-row>
 				<p>Period: {{ calc.firstPoint.date }} - {{ calc.lastPoint.date }} (Includes actual first price and last price found)</p>
 				<p>Purchase at: {{ calc.firstPoint.price }} EGP</p>
@@ -98,7 +98,8 @@ export default {
 	data: () => {
 		const startYear = 2015
 		const endYear = new Date().getFullYear()
-		const availableYears = Array(endYear - startYear + 1).fill().map((_, i) => i + startYear)
+		// +2 so you include current year and the year after
+		const availableYears = Array(endYear - startYear + 2).fill().map((_, i) => i + startYear)
 		
 		return {
 			year: 2015,
@@ -131,6 +132,8 @@ export default {
 			const princNum = Number(this.principle.replace(/\D/g, ''))
 			const profit = Math.ceil(princNum * percDiff / 100)
 			const endPrinciple = princNum + profit
+			const rawAnnualized = percDiff / (this.endYear - this.startYear)
+			const annualized = Math.round(rawAnnualized * 100) / 100
 
 			return {
 				endPrinciple: this.addComma(endPrinciple),
@@ -138,7 +141,8 @@ export default {
 				profitPerc: percDiff,
 				priceDiff,
 				firstPoint,
-				lastPoint
+				lastPoint,
+				annualized
 			}
 		},
 		years () {
@@ -187,7 +191,6 @@ export default {
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 		},
 		getPercents (startYear) {
-			const endYear = startYear + 1 
 			const percents = []
 
 			for (let fund of this.funds) {
