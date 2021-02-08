@@ -1,6 +1,7 @@
 export const state = () => ({
   funds: {},
-  fundsTable: []
+  fundsTable: [],
+  fundTitles: [],
 })
 
 export const mutations = {
@@ -9,6 +10,9 @@ export const mutations = {
   },
   setFundsTable (state, value) {
     state.fundsTable = value
+  },
+  setFundTitles (state, value) {
+    state.fundTitles = value
   }
 }
 
@@ -39,10 +43,13 @@ const formatFundsTable = funds => {
 
 export const actions = {
   async getFunds ({ commit }) {
-		const { data } = await this.$axios('/funds')
+    const { data } = await this.$axios('/funds')
+    const fundsTable = formatFundsTable(data)
+    const fundTitles = Object.keys(data)
 
 		commit('setFunds', data)
-		commit('setFundsTable', formatFundsTable(data))
+		commit('setFundsTable', fundsTable)
+		commit('setFundTitles', fundTitles)
   },
   async nuxtServerInit ({ dispatch }) {
     await dispatch('getFunds')

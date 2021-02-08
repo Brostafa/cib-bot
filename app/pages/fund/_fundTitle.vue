@@ -231,8 +231,6 @@ export default {
       this.endDate = this.$dateFns.format(date)
     },
     updatePeriod () {
-      const { period } = this
-      let periodInMs = 0
       const day = 23 * 60 * 60 * 1000
       const [ sYear, sMonth, sDay ] = this.startDate.split('-')
       const startTimestamp = this.startDate

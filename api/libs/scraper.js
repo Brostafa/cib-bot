@@ -99,7 +99,6 @@ const makeRequest = async (url, proxies, _retry = 1) => {
 			const randomIndex = Math.floor(Math.random() * proxies.length)
 			proxy = proxies[randomIndex]
 		}
-		console.log(_retry, proxy)
 
 		const response = JSON.parse(await request(url, {
 			headers: {

@@ -47,7 +47,10 @@
       </template>
     </v-simple-table>
     <section class="mt-6">
-      <v-btn class="mr-2" color="info" @click="downloadData">Download Xsls</v-btn>
+      <NuxtLink to="/yoy">
+        <v-btn class="mr-2 mb-2" color="info">Year over Year</v-btn>
+      </NuxtLink>
+      <v-btn class="mr-2 mb-2" color="info" @click="downloadData">Download Xsls</v-btn>
       <v-btn
         color="info"
         @click="updateBloomberg"
