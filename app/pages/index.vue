@@ -18,6 +18,12 @@
             <th class="text-left">
               Net Asset (EGP)
             </th>
+            <th class="text-left">
+              Prev Year
+            </th>
+            <th class="text-left">
+              ETA this Year
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +47,8 @@
                 ({{item.percDiff}}%)
               </span>
             </td>
-
+            <td :class="item.prevYear < 0 ? 'red--text' : 'green--text'">{{item.prevYear}}%</td>
+            <td :class="item.etaYear < 0 ? 'red--text' : 'green--text'">{{item.etaYear}}%</td>
           </tr>
         </tbody>
       </template>
@@ -95,8 +102,14 @@ export default {
   },
   computed: {
     funds () {
-      return this.$store.state.fundsTable 
-    }
+      return this.$store.state.fundsTable.map(fund => {
+        return {
+          ...fund,
+          prevYear: this.getPrevYear(fund.name),
+          etaYear: this.getEtaYear(fund.name)
+        }
+      })
+    },
   },
   methods: {
     downloadData () {
@@ -127,6 +140,55 @@ export default {
       }
 
       this.upadtingBloomberg = false
+    },
+		getDiff ({ startYear, endYear, fundTitle }) {
+			const dayMs = 23 * 60 * 60 * 1000
+			const startTimestamp = new Date(startYear, 0, 1).getTime() - (dayMs * 2)
+			const endTimestamp = new Date(endYear, 0, 1).getTime() + (dayMs * 2)
+
+			const fundPrices = this.$store.state.funds[fundTitle]
+			const filteredFunds = fundPrices.filter(val => val.timestamp > startTimestamp && val.timestamp <= endTimestamp)
+			const prices = filteredFunds.map(fund => fund.price)
+			const currentPrice = prices.slice(-1)[0]
+			const firstPrice = prices[0]
+			const priceDiff = Math.round((currentPrice - firstPrice) * 100) / 100
+			const percDiff = Math.round((currentPrice / firstPrice - 1) * 100 * 100) / 100
+
+			return {
+				priceDiff,
+				percDiff,
+				firstPoint: filteredFunds[0],
+				lastPoint: filteredFunds.slice(-1)[0]
+			}
+		},
+    getPrevYear (fundTitle) {
+      const currYear = new Date().getFullYear()
+      const prevYear = currYear - 1
+      
+      const { percDiff } = this.getDiff({
+        startYear: prevYear,
+        endYear: currYear,
+        fundTitle
+      })
+
+      return percDiff
+    },
+    getEtaYear (fundTitle) {
+      const currYear = new Date().getFullYear()
+      const nextYear = currYear + 1
+      
+      const { firstPoint, lastPoint, percDiff } = this.getDiff({
+        startYear: currYear,
+        endYear: nextYear,
+        fundTitle
+      })
+
+      const msDiff = lastPoint.timestamp - firstPoint.timestamp
+      const days = Math.round(msDiff / (1000 * 60 * 60 * 24))
+      let etaPerc = (percDiff / days) * 360
+      etaPerc =  Math.round(etaPerc * 100) / 100
+
+      return etaPerc
     }
   },
   head: {
