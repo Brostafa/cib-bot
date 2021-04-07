@@ -90,7 +90,7 @@ export default {
 					value: 'period'
 				},
 				{
-					text: 'P/L',
+					text: 'Period P/L',
 					value: 'profitLoss'
 				},
 				{
