@@ -10,7 +10,7 @@
 			<template v-slot:activator="{ on, attrs }">
 				<v-text-field
 					v-model="dateRange"
-					label="Period (MM/DD)"
+					label="Period (DD/MM)"
 					prepend-icon="mdi-calendar"
 					class="text-center mt-3"
 					readonly
