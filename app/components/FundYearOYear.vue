@@ -82,6 +82,10 @@ export default {
 			items: [],
 			headers: [
 				{
+					text: 'Year',
+					value: 'year'
+				},
+				{
 					text: 'Period',
 					value: 'period'
 				},
@@ -205,6 +209,7 @@ export default {
 				const etaYear = this.getEtaYear(filteredFunds, profitLoss)
 				
 				return {
+					year: currYear,
 					period: `${startDate} ~ ${endDate}`,
 					profitLoss,
 					actualYear,
