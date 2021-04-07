@@ -147,6 +147,11 @@
           <v-col>High: {{high}}</v-col>
           <v-col>Low: {{low}}</v-col>
         </v-row>
+
+        <v-divider></v-divider>
+        <v-spacer></v-spacer>
+        <h2 class="text-center mt-5">Year Over Year</h2>
+        <FundYearOYear :funds="funds"/>
       </v-container>
     </div>
 </template>
