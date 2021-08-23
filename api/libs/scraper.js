@@ -45,14 +45,39 @@ const saveExcel = async () => {
 	logger.info(`[Xsls] created spreadsheet`)
 }
 
+/**
+ * Return a normalized response from CIB website
+ * 
+ * @returns {Promise<array>} [{ "FundCode": "OSOUL", "FundDate": "25/08/2021", "Nav": 500 }]
+ * 
+ */
 const scrape = async () => {
-	const response = await request.post('https://www.cibeg.com/_layouts/15/LINKDev.CIB.CurrenciesFunds/FundsCurrencies.aspx/GetFunds', {
-		json: {
-			lang: 'en'
+	const response = await request.get('https://www.cibeg.com/api/fund/getfunds')
+
+	const { fundNavList: { navList: json } } = JSON.parse(response)
+
+	return json.map(entry => {
+		const { fundCode, nav, navDate } = entry
+		const year = String(navDate).substr(0, 4)
+		const month = String(navDate).substr(4, 2)
+		const day = String(navDate).substr(6, 2)
+		
+		const funds = {
+			'2': 'OSOUL',
+			'3': 'Istethmar',
+			'4': 'Aman',
+			'5': 'Hemaya',
+			'6': 'Thabat',
+			'7': 'Misr ElMostakbal',
+			'8': 'Takamol',
+		}
+		
+		return {
+			FundCode: funds[fundCode],
+			FundDate: `${day}/${month}/${year}`,
+			Nav: nav
 		}
 	})
-
-	return response.d
 }
 
 const startScraper = async () => {
@@ -61,19 +86,19 @@ const startScraper = async () => {
 		let dataChanged = false
 	
 		for (let value of json) {
-			const { FundTitle, FundCode, Nav } = value
-			const lastRow = lowdb.get(FundTitle).takeRight(1).value()[0]
-			const shouldSave = !lastRow || lastRow.date !== FundCode
-			const [ day, month, year ] = FundCode.split('/')
+			const { FundCode, FundDate, Nav } = value
+			const lastRow = lowdb.get(FundCode).takeRight(1).value()[0]
+			const shouldSave = !lastRow || lastRow.date !== FundDate
+			const [ day, month, year ] = FundDate.split('/')
 
 			if (shouldSave) {
 				dataChanged = true
-				logger.info(`[Scraper] Saving FundTitle="${FundTitle}" Date="${FundCode}" Price="${Nav}"`)
+				logger.info(`[Scraper] Saving FundCode="${FundCode}" Date="${FundDate}" Price="${Nav}"`)
 	
 				lowdb
-					.get(FundTitle)
+					.get(FundCode)
 					.push({
-						date: FundCode,
+						date: FundDate,
 						timestamp: new Date(year, month - 1, day).getTime(),
 						price: Nav,
 						scrapedAt: Date.now()
