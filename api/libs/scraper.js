@@ -87,8 +87,8 @@ const startScraper = async () => {
 	
 		for (let value of json) {
 			const { FundCode, FundDate, Nav } = value
-			const lastRow = lowdb.get(FundCode).takeRight(1).value()[0]
-			const shouldSave = !lastRow || lastRow.date !== FundDate
+			const dateIndex = lowdb.get(FundCode).findIndex({date: FundDate}).value
+			const shouldSave = !dateIndex || dateIndex === -1
 			const [ day, month, year ] = FundDate.split('/')
 
 			if (shouldSave) {
